@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boy Running Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f2f2f2;
+        }
+        canvas {
+            display: block;
+            background-color: #ccc;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size to full screen
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Boy character variables
+        const boyWidth = 50;
+        const boyHeight = 80;
+        let boyX = 50;
+        let boyY = canvas.height - boyHeight - 10;
+        const boySpeed = 5;
+
+        // Obstacle variables
+        let obstacles = [];
+        const obstacleWidth = 40;
+        const obstacleHeight = 60;
+        const obstacleSpeed = 5;
+
+        // Keydown event listeners for moving left and right
+        let moveLeft = false;
+        let moveRight = false;
+
+        document.addEventListener('keydown', keyDownHandler, false);
+        document.addEventListener('keyup', keyUpHandler, false);
+
+        function keyDownHandler(e) {
+            if (e.key === "ArrowLeft") {
+                moveLeft = true;
+            } else if (e.key === "ArrowRight") {
+                moveRight = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if (e.key === "ArrowLeft") {
+                moveLeft = false;
+            } else if (e.key === "ArrowRight") {
+                moveRight = false;
+            }
+        }
+
+        // Draw boy character
+        function drawBoy() {
+            ctx.beginPath();
+            ctx.rect(boyX, boyY, boyWidth, boyHeight);
+            ctx.fillStyle = "#0095DD"; // Blue color for the boy
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw obstacles
+        function drawObstacle(obstacle) {
+            ctx.beginPath();
+            ctx.rect(obstacle.x, obstacle.y, obstacleWidth, obstacleHeight);
+            ctx.fillStyle = "#ff0000"; // Red color for obstacles
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Create new obstacles
+        function generateObstacle() {
+            const obstacleX = canvas.width;
+            const obstacleY = canvas.height - obstacleHeight - 10;
+            obstacles.push({ x: obstacleX, y: obstacleY });
+        }
+
+        // Update obstacles
+        function updateObstacles() {
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                obs.x -= obstacleSpeed;
+
+                // Remove obstacles that go off-screen
+                if (obs.x + obstacleWidth < 0) {
+                    obstacles.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        // Collision detection
+        function detectCollision() {
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                if (boyX + boyWidth > obs.x && boyX < obs.x + obstacleWidth &&
+                    boyY + boyHeight > obs.y && boyY < obs.y + obstacleHeight) {
+                    alert("Game Over!");
+                    document.location.reload();
+                }
+            }
+        }
+
+        // Move boy
+        function moveBoy() {
+            if (moveLeft && boyX > 0) {
+                boyX -= boySpeed;
+            }
+            if (moveRight && boyX + boyWidth < canvas.width) {
+                boyX += boySpeed;
+            }
+        }
+
+        // Game update
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBoy();
+            updateObstacles();
+            detectCollision();
+            moveBoy();
+
+            // Draw obstacles
+            obstacles.forEach(drawObstacle);
+
+            // Generate new obstacles every 100 frames
+            if (Math.random() < 0.02) {
+                generateObstacle();
+            }
+
+            requestAnimationFrame(updateGame);
+        }
+
+        // Start the game
+        updateGame();
+    </script>
+</body>
+</html>
